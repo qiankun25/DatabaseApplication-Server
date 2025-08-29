@@ -335,6 +335,7 @@
         "type": "Project",
         "dependencies": {
           "Domain": "[1.0.0, )",
+          "Infrastructure": "[1.0.0, )",
           "mediatr": "[13.0.0, )"
         }
       },
