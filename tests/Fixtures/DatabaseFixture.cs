@@ -10,26 +10,19 @@ namespace DbApp.Tests.Fixtures;
 public class DatabaseFixture : IAsyncLifetime
 {
     public ApplicationDbContext DbContext { get; }
+    public string DatabaseName { get; }
     private Respawner _respawner = null!;
     private DbConnection _connection = null!;
 
     public DatabaseFixture()
     {
-        var oracleConnectionString = Env.GetString("TestOracleConnection") ??
-            "Data Source=localhost:1521/FREEPDB1;User ID=TESTUSER;Password=TESTPASSWORD;";
+        // Use InMemory database for integration tests to avoid Oracle dependency
+        DatabaseName = $"TestDb_{Guid.NewGuid()}";
 
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseOracle(oracleConnectionString)
-            .UseEnumCheckConstraints()
-            .UseValidationCheckConstraints()
-            .UseSeeding((context, changed) =>
-            {
-                DataSeeding.SeedData(context);
-            })
-            .UseAsyncSeeding(async (context, changed, cancellationToken) =>
-            {
-                await DataSeeding.SeedDataAsync(context);
-            })
+            .UseInMemoryDatabase(DatabaseName)
+            // Note: InMemory database doesn't support Oracle-specific extensions
+            // like UseEnumCheckConstraints() and UseValidationCheckConstraints()
             .Options;
 
         DbContext = new ApplicationDbContext(options);
@@ -37,36 +30,36 @@ public class DatabaseFixture : IAsyncLifetime
 
     public async Task ResetDatabaseAsync()
     {
-        await _respawner.ResetAsync(_connection);
-        await DbContext.Database.EnsureCreatedAsync();
+        // For InMemory database, we can simply clear the context and re-seed
+        DbContext.ChangeTracker.Clear();
+
+        // Remove all entities
+        DbContext.RemoveRange(DbContext.Users);
+        DbContext.RemoveRange(DbContext.Roles);
+        DbContext.RemoveRange(DbContext.Visitors);
+        DbContext.RemoveRange(DbContext.Employees);
+        await DbContext.SaveChangesAsync();
+
+        // Re-seed the database
+        await DataSeeding.SeedDataAsync(DbContext);
     }
 
     public async Task InitializeAsync()
     {
-        await DbContext.Database.EnsureDeletedAsync();
-        await DbContext.Database.MigrateAsync();
+        // For InMemory database, ensure it's created and seeded
+        await DbContext.Database.EnsureCreatedAsync();
 
-        var builder = new DbConnectionStringBuilder
-        {
-            ConnectionString = DbContext.Database.GetConnectionString()
-        };
-        string schema = (builder["User ID"]?.ToString() ?? "TESTUSER").ToUpper();
+        // Seed initial data
+        await DataSeeding.SeedDataAsync(DbContext);
 
-        var respawnerOptions = new RespawnerOptions
-        {
-            SchemasToInclude = [schema],
-            DbAdapter = DbAdapter.Oracle
-        };
-
-        _connection = DbContext.Database.GetDbConnection();
-        await _connection.OpenAsync();
-        _respawner = await Respawner.CreateAsync(_connection, respawnerOptions);
+        // For InMemory database, we don't need Respawner setup or connection handling
+        // _connection = DbContext.Database.GetDbConnection(); // This doesn't work with InMemory
     }
 
     public async Task DisposeAsync()
     {
-        await DbContext.Database.EnsureDeletedAsync();
+        // For InMemory database, just dispose the context
         await DbContext.DisposeAsync();
-        await _connection.DisposeAsync();
+        // No need to dispose connection for InMemory database
     }
 }

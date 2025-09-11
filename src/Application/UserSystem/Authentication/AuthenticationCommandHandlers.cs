@@ -91,7 +91,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponseDt
 
             // Store refresh token mapping
             var refreshTokenKey = $"refresh_token:{refreshToken}";
-            await _cacheService.SetAsync(refreshTokenKey, new { UserId = user.UserId }, TimeSpan.FromDays(30));
+            await _cacheService.SetAsync(refreshTokenKey, new RefreshTokenData { UserId = user.UserId }, TimeSpan.FromDays(30));
 
             // Record login history
             await RecordLoginHistoryAsync(user.UserId, request.IpAddress, request.UserAgent, true);
@@ -211,7 +211,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         {
             // Validate refresh token
             var refreshTokenKey = $"refresh_token:{request.RefreshToken}";
-            var tokenData = await _cacheService.GetAsync<dynamic>(refreshTokenKey);
+            var tokenData = await _cacheService.GetAsync<RefreshTokenData>(refreshTokenKey);
 
             if (tokenData == null)
             {
@@ -219,7 +219,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
                 throw new ValidationException("Invalid refresh token.");
             }
 
-            var userId = (int)tokenData.GetType().GetProperty("UserId")?.GetValue(tokenData)!;
+            var userId = tokenData.UserId;
 
             // Get user information
             var user = await _context.Users
@@ -254,7 +254,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             // Remove old refresh token and store new one
             await _cacheService.RemoveAsync(refreshTokenKey);
             var newRefreshTokenKey = $"refresh_token:{newRefreshToken}";
-            await _cacheService.SetAsync(newRefreshTokenKey, new { UserId = userId }, TimeSpan.FromDays(30));
+            await _cacheService.SetAsync(newRefreshTokenKey, new RefreshTokenData { UserId = userId }, TimeSpan.FromDays(30));
 
             _logger.LogInformation("Token refreshed for user: {UserId}", userId);
 
@@ -344,4 +344,12 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Unit>
             }
         }
     }
+}
+
+/// <summary>
+/// Simple DTO for refresh token data stored in cache.
+/// </summary>
+public class RefreshTokenData
+{
+    public int UserId { get; set; }
 }

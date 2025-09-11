@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using DbApp.Application.UserSystem.Authentication;
 using DbApp.Domain.Entities.UserSystem;
+using DbApp.Infrastructure;
 using DbApp.Infrastructure.Services.UserSystem;
 using DbApp.Tests.Fixtures;
 using Microsoft.EntityFrameworkCore;
@@ -25,20 +26,27 @@ public class AuthenticationIntegrationTests(DatabaseFixture fixture) : IAsyncLif
 
     private User? _testUser;
     private Role? _testRole;
+    private TestApiFactory? _factory;
+    private HttpClient? _client;
 
     public async Task InitializeAsync()
     {
+        _factory = new TestApiFactory(fixture);
+        _client = _factory.CreateClient();
         await AddTestUserData();
     }
 
     public async Task DisposeAsync()
     {
         await RemoveTestUserData();
+        _client?.Dispose();
+        _factory?.Dispose();
     }
 
     private async Task AddTestUserData()
     {
-        var db = fixture.DbContext;
+        using var scope = _factory!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         // 创建测试角色
         _testRole = new Role
@@ -77,37 +85,45 @@ public class AuthenticationIntegrationTests(DatabaseFixture fixture) : IAsyncLif
 
     private async Task RemoveTestUserData()
     {
-        var db = fixture.DbContext;
-
-        if (_testUser != null)
+        try
         {
-            var user = await db.Users.FirstOrDefaultAsync(u => u.UserId == _testUser.UserId);
-            if (user != null)
-            {
-                db.Users.Remove(user);
-            }
-        }
+            if (_factory == null) return;
 
-        if (_testRole != null)
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            if (_testUser != null)
+            {
+                var user = await db.Users.FirstOrDefaultAsync(u => u.UserId == _testUser.UserId);
+                if (user != null)
+                {
+                    db.Users.Remove(user);
+                }
+            }
+
+            if (_testRole != null)
+            {
+                var role = await db.Roles.FirstOrDefaultAsync(r => r.RoleId == _testRole.RoleId);
+                if (role != null)
+                {
+                    db.Roles.Remove(role);
+                }
+            }
+
+            await db.SaveChangesAsync();
+            Console.WriteLine("✓ Cleaned up test authentication data");
+        }
+        catch (Exception ex)
         {
-            var role = await db.Roles.FirstOrDefaultAsync(r => r.RoleId == _testRole.RoleId);
-            if (role != null)
-            {
-                db.Roles.Remove(role);
-            }
+            Console.WriteLine($"⚠ Error during cleanup: {ex.Message}");
+            // Don't throw during cleanup to avoid masking test failures
         }
-
-        await db.SaveChangesAsync();
-        Console.WriteLine("✓ Cleaned up test authentication data");
     }
 
     [Fact]
     public async Task Login_WithValidCredentials_ShouldReturnSuccessWithTokens()
     {
         // Arrange
-        using var factory = new TestApiFactory(fixture);
-        using var client = factory.CreateClient();
-
         var loginRequest = new LoginRequestDto
         {
             Username = "testuser",
@@ -116,7 +132,7 @@ public class AuthenticationIntegrationTests(DatabaseFixture fixture) : IAsyncLif
         };
 
         // Act
-        var response = await client.PostAsJsonAsync("/api/auth/login", loginRequest, _jsonOptions);
+        var response = await _client!.PostAsJsonAsync("/api/auth/login", loginRequest, _jsonOptions);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

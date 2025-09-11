@@ -23,9 +23,9 @@ public class AuthenticationMappingProfile : Profile
         // UserSession to UserSessionDto mapping
         CreateMap<UserSession, UserSessionDto>();
 
-        // PasswordResetToken to PasswordResetTokenDto mapping (if needed)
+        // PasswordResetToken to anonymous object mapping (if needed)
         CreateMap<PasswordResetToken, object>()
-            .ForMember(dest => dest, opt => opt.MapFrom(src => new
+            .ConstructUsing(src => new
             {
                 src.UserId,
                 src.Username,
@@ -34,11 +34,11 @@ public class AuthenticationMappingProfile : Profile
                 src.ExpiresAt,
                 src.IsUsed,
                 src.ResetMethod
-            }));
+            });
 
         // LoginFailureInfo mapping (if needed for admin purposes)
         CreateMap<LoginFailureInfo, object>()
-            .ForMember(dest => dest, opt => opt.MapFrom(src => new
+            .ConstructUsing(src => new
             {
                 src.Username,
                 src.FailureCount,
@@ -47,6 +47,6 @@ public class AuthenticationMappingProfile : Profile
                 src.LockoutUntil,
                 src.IsLocked,
                 FailureIpCount = src.FailureIpAddresses.Count
-            }));
+            });
     }
 }
