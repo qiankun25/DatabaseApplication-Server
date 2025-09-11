@@ -24,6 +24,12 @@ public class AuthenticationService : IAuthenticationService
     {
         try
         {
+            // 检查用户名和密码是否为空
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                return null;
+            }
+
             var user = await _context.Users
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Username == username);

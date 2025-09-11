@@ -2,6 +2,17 @@
   "version": 1,
   "dependencies": {
     "net9.0": {
+      "AutoMapper": {
+        "type": "Direct",
+        "requested": "[15.0.1, )",
+        "resolved": "15.0.1",
+        "contentHash": "kNo7iIAi4p4XxoEbfif2WUQtc6RTx+UteiRYPqCOKj+4q4+YaWono06qTxoHBy+0N1HdganA//k5p/VmWw2AMA==",
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "8.0.0",
+          "Microsoft.Extensions.Options": "8.0.0",
+          "Microsoft.IdentityModel.JsonWebTokens": "8.0.1"
+        }
+      },
       "coverlet.collector": {
         "type": "Direct",
         "requested": "[6.0.4, )",
@@ -28,6 +39,17 @@
           "Microsoft.AspNetCore.TestHost": "9.0.8",
           "Microsoft.Extensions.DependencyModel": "9.0.8",
           "Microsoft.Extensions.Hosting": "9.0.8"
+        }
+      },
+      "Microsoft.EntityFrameworkCore.InMemory": {
+        "type": "Direct",
+        "requested": "[9.0.8, )",
+        "resolved": "9.0.8",
+        "contentHash": "F5+lo74OJH9iik/WtMae9ySeew1pxiYSmODkTmHo7n7JsCM5flW1WlUCjACoe7XM9Gng2ndUwXjIizhzx3Os5w==",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "9.0.8",
+          "Microsoft.Extensions.Caching.Memory": "9.0.8",
+          "Microsoft.Extensions.Logging": "9.0.8"
         }
       },
       "Microsoft.Extensions.Hosting": {
@@ -70,6 +92,15 @@
           "Microsoft.TestPlatform.TestHost": "17.14.1"
         }
       },
+      "Moq": {
+        "type": "Direct",
+        "requested": "[4.20.72, )",
+        "resolved": "4.20.72",
+        "contentHash": "EA55cjyNn8eTNWrgrdZJH5QLFp2L43oxl1tlkoYUKIE9pRwL784OWiTXeCV5ApS+AMYEAlt7Fo03A2XfouvHmQ==",
+        "dependencies": {
+          "Castle.Core": "5.1.1"
+        }
+      },
       "Respawn": {
         "type": "Direct",
         "requested": "[6.2.1, )",
@@ -101,16 +132,6 @@
         "requested": "[3.1.4, )",
         "resolved": "3.1.4",
         "contentHash": "5mj99LvCqrq3CNi06xYdyIAXOEh+5b33F2nErCzI5zWiDdLHXiPXEWFSUAF8zlIv0ZWqjZNCwHTQeAPYbF3pCg=="
-      },
-      "AutoMapper": {
-        "type": "Transitive",
-        "resolved": "15.0.1",
-        "contentHash": "kNo7iIAi4p4XxoEbfif2WUQtc6RTx+UteiRYPqCOKj+4q4+YaWono06qTxoHBy+0N1HdganA//k5p/VmWw2AMA==",
-        "dependencies": {
-          "Microsoft.Extensions.Logging": "8.0.0",
-          "Microsoft.Extensions.Options": "8.0.0",
-          "Microsoft.IdentityModel.JsonWebTokens": "8.0.1"
-        }
       },
       "Azure.Core": {
         "type": "Transitive",
@@ -144,6 +165,14 @@
         "type": "Transitive",
         "resolved": "4.0.3",
         "contentHash": "W+U9WvmZQgi5cX6FS5GDtDoPzUCV4LkBLkywq/kRZhuDwcbavOzcDAr3LXJFqHUi952Yj3LEYoWW0jbEUQChsA=="
+      },
+      "Castle.Core": {
+        "type": "Transitive",
+        "resolved": "5.1.1",
+        "contentHash": "rpYtIczkzGpf+EkZgDr9CClTdemhsrwA/W5hMoPjLkRFnXzH44zDLoovXeKtmxb1ykXK9aJVODSpiJml8CTw2g==",
+        "dependencies": {
+          "System.Diagnostics.EventLog": "6.0.0"
+        }
       },
       "DotNetEnv": {
         "type": "Transitive",

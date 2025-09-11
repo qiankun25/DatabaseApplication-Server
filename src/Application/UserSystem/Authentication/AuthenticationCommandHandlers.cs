@@ -115,6 +115,12 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponseDt
 
     private async Task RecordLoginFailureAsync(string username, string? ipAddress)
     {
+        // 检查用户名是否为空
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return; // 不记录空用户名的失败尝试
+        }
+
         var lockoutKey = $"login_failures:{username.ToLower()}";
         var failureInfo = await _cacheService.GetAsync<LoginFailureInfo>(lockoutKey) ?? new LoginFailureInfo { Username = username };
         
