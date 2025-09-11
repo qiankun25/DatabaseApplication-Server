@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using DbApp.Infrastructure;
 using DbApp.Infrastructure.DataSeedings;
+using DbApp.Infrastructure.DependencyInjection;
 using DotNetEnv;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,9 @@ builder.Services.AddMediatR(cfg =>
 
 // Register AutoMapper for DTO mapping.
 builder.Services.AddAutoMapper(cfg => { }, typeof(DbApp.Application.MappingProfile).Assembly);
+
+// Add authentication services
+builder.Services.AddAuthenticationServices(builder.Configuration);
 
 // Configure Entity Framework with Oracle database and check constraints.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -118,6 +122,11 @@ if (app.Environment.IsDevelopment())
 
 // Force HTTPS redirection for security.
 app.UseHttpsRedirection();
+
+// Add authentication middleware
+app.UseAuthentication();
+app.UseJwtAuthenticationMiddleware();
+app.UseAuthorization();
 
 // Register exception handling middleware.
 app.UseExceptionHandler(errorApp =>

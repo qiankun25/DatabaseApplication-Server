@@ -1,0 +1,170 @@
+### 测试认证API的HTTP请求文件
+### 使用VS Code的REST Client扩展或其他HTTP客户端工具
+
+@baseUrl = https://localhost:7000
+@contentType = application/json
+
+### 1. 测试API连通性
+GET {{baseUrl}}/api/testauth/ping
+
+### 2. 测试Redis缓存
+GET {{baseUrl}}/api/testauth/test-cache
+
+### 3. 用户登录
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "alice_member",
+  "password": "hashedpassword123",
+  "rememberMe": false
+}
+
+### 4. 获取用户信息（需要先登录获取token）
+GET {{baseUrl}}/api/userprofile/me
+Authorization: Bearer {{accessToken}}
+
+### 5. 获取用户详细资料
+GET {{baseUrl}}/api/userprofile/profile
+Authorization: Bearer {{accessToken}}
+
+### 6. 更新用户资料
+PUT {{baseUrl}}/api/userprofile/profile
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "displayName": "Alice Johnson Updated",
+  "email": "alice.updated@example.com",
+  "phoneNumber": "1234567890"
+}
+
+### 7. 获取登录历史
+GET {{baseUrl}}/api/userprofile/login-history?pageNumber=1&pageSize=10
+Authorization: Bearer {{accessToken}}
+
+### 8. 获取活跃会话
+GET {{baseUrl}}/api/userprofile/sessions
+Authorization: Bearer {{accessToken}}
+
+### 9. 修改密码
+POST {{baseUrl}}/api/auth/change-password
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}
+
+{
+  "currentPassword": "hashedpassword123",
+  "newPassword": "newpassword123",
+  "confirmPassword": "newpassword123"
+}
+
+### 10. 刷新令牌
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: {{contentType}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 11. 验证会话
+GET {{baseUrl}}/api/auth/validate
+Authorization: Bearer {{accessToken}}
+
+### 12. 忘记密码
+POST {{baseUrl}}/api/auth/forgot-password
+Content-Type: {{contentType}}
+
+{
+  "usernameOrEmail": "alice_member"
+}
+
+### 13. 重置密码（需要从日志中获取重置令牌）
+POST {{baseUrl}}/api/auth/reset-password
+Content-Type: {{contentType}}
+
+{
+  "token": "{{resetToken}}",
+  "newPassword": "resetpassword123",
+  "confirmPassword": "resetpassword123"
+}
+
+### 14. 登出
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{accessToken}}
+
+### 15. 测试登录失败（错误密码）
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "alice_member",
+  "password": "wrongpassword",
+  "rememberMe": false
+}
+
+### 16. 测试账户锁定（多次失败登录后）
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "alice_member",
+  "password": "wrongpassword1",
+  "rememberMe": false
+}
+
+###
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "alice_member",
+  "password": "wrongpassword2",
+  "rememberMe": false
+}
+
+###
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "alice_member",
+  "password": "wrongpassword3",
+  "rememberMe": false
+}
+
+###
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "alice_member",
+  "password": "wrongpassword4",
+  "rememberMe": false
+}
+
+###
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "alice_member",
+  "password": "wrongpassword5",
+  "rememberMe": false
+}
+
+### 17. 测试锁定后的登录尝试
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "alice_member",
+  "password": "hashedpassword123",
+  "rememberMe": false
+}
+
+### 注意事项：
+### 1. 请将 {{accessToken}} 替换为实际的访问令牌
+### 2. 请将 {{refreshToken}} 替换为实际的刷新令牌
+### 3. 请将 {{resetToken}} 替换为从日志中获取的重置令牌
+### 4. 确保Redis服务器正在运行
+### 5. 确保数据库中存在测试用户数据

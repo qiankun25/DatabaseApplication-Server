@@ -1,3 +1,4 @@
+using DbApp.Application.Common.Interfaces;
 using DbApp.Domain.Entities.ResourceSystem;
 using DbApp.Domain.Entities.TicketingSystem;
 using DbApp.Domain.Entities.UserSystem;
@@ -5,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DbApp.Infrastructure;
 
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options), IApplicationDbContext
 {
     // DbSet properties for each entity.
     // User System.
